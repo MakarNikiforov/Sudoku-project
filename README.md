@@ -1,4 +1,1 @@
-# asdasda
- asdada wq 
- qweqwe 
- qweq
+# Sudoku project

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ULTRAKILL-style Menu</title>
+<style>
+  body {
+    margin: 0;
+    background: black;
+    font-family: 'Courier New', monospace;
+    overflow: hidden;
+  }
+
+  canvas {
+    display: block;
+    image-rendering: pixelated;
+  }
+
+  /* Scanlines overlay */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.03) 0px,
+      rgba(255,255,255,0.03) 1px,
+      transparent 2px,
+      transparent 4px
+    );
+  }
+
+  /* ULTRAKILL-style menu */
+  .menu {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: absolute;
+    top: 55%;             /* slightly below center for more room at top */
+    left: 150px;          /* slightly more to the right */
+    transform: translateY(-50%);
+    width: 320px;
+    z-index: 10;
+  }
+
+  .menu button {
+    background: black;
+    color: white;
+    border: 4px solid white;
+    border-radius: 16px;           /* more rounded corners */
+    font-family: 'Courier New', monospace;
+    font-size: 32px;
+    padding: 25px 0;
+    text-align: center;
+    cursor: pointer;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: all 0.1s;
+    image-rendering: pixelated;    /* crisp pixelated look */
+  }
+
+  .menu button:hover {
+    background: white;
+    color: black;
+  }
+
+  .menu button:active {
+    transform: scale(0.95);
+  }
+
+  /* Placeholder for game title */
+  .title-placeholder {
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Courier New', monospace;
+    font-size: 64px;
+    color: white;
+    letter-spacing: 4px;
+    text-align: center;
+    z-index: 10;
+    user-select: none;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+
+<!-- Game title placeholder -->
+<div class="title-placeholder">GAME TITLE</div>
+
+<!-- ULTRAKILL-style menu -->
+<div class="menu">
+  <button>PLAY</button>
+  <button>OPTIONS</button>
+  <button>MUSEUM</button>
+  <button>QUIT</button>
+</div>
+
+<script>
+const canvas = document.getElementById("bg");
+const ctx = canvas.getContext("2d");
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
+
+// --- Background squares ---
+const objects = [];
+function createObject() {
+  return {
+    x: canvas.width + Math.random() * 200,
+    y: Math.random() * canvas.height,
+    size: 30 + Math.random() * 50,
+    speed: 0.5 + Math.random() * 2,
+    angle: Math.random() * Math.PI,
+    rotationSpeed: (Math.random() - 0.5) * 0.01,
+    alpha: 0.1 + Math.random() * 0.3
+  };
+}
+for (let i = 0; i < 15; i++) objects.push(createObject());
+
+function drawPixelSquare(size) {
+  const thickness = 1;
+  ctx.fillStyle = "white";
+  ctx.fillRect(-size/2, -size/2, size, thickness);
+  ctx.fillRect(-size/2, size/2 - thickness, size, thickness);
+  ctx.fillRect(-size/2, -size/2, thickness, size);
+  ctx.fillRect(size/2 - thickness, -size/2, thickness, size);
+}
+
+function draw() {
+  ctx.fillStyle = "rgba(0,0,0,0.5)";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  objects.forEach(obj => {
+    ctx.save();
+    ctx.translate(obj.x, obj.y);
+    ctx.rotate(obj.angle);
+    ctx.shadowColor = "white";
+    ctx.shadowBlur = 4;
+    ctx.globalAlpha = obj.alpha;
+    drawPixelSquare(obj.size);
+    ctx.globalAlpha = 1;
+    ctx.restore();
+
+    obj.x -= obj.speed;
+    obj.angle += obj.rotationSpeed;
+
+    if(obj.x < -obj.size){
+      Object.assign(obj, createObject());
+      obj.x = canvas.width + Math.random()*100;
+    }
+  });
+
+  requestAnimationFrame(draw);
+}
+
+draw();
+</script>
+
+</body>
+</html>

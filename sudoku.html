@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="sudoku.css">
+    
+    <title>Document</title>
+</head>
+<body>
+
+  <!-- MAIN MENU -->
+  <canvas id="bg"></canvas>
+
+<div id="menu" class="screen">
+  <div class="title-placeholder">SUDOKU</div>
+
+  <div class="menu-container">
+    <div class="menu">
+      <button onclick="showScreen('game')">PLAY</button>
+      <button onclick="showScreen('rules')">RULES</button>
+      <button onclick="showScreen('credits')">CREDITS</button>
+    </div>
+  </div>
+</div>
+
+  <!-- RULES -->
+  <div id="rules" class="screen hidden">
+    <h2>Rules</h2>
+    <p>
+      Fill the grid so that every row, column, and 3×3 box
+      contains the numbers 1–9 exactly once.
+    </p>
+    <button onclick="showScreen('menu')">Back</button>
+  </div>
+
+  <!-- CREDITS -->
+  <div id="credits" class="screen hidden">
+    <h2>Credits</h2>
+    <p>Made by:</p>
+    <button onclick="showScreen('menu')">Back</button>
+  </div>
+
+
+  <div id="lose" class="screen hidden">
+  <h1> YOU LOSE </h1>
+  <p>You ran out of lives.</p>
+  <button onclick="showScreen('menu')">Back to Menu</button>
+</div>
+
+
+
+  <!-- GAME -->
+<div id="game" class="screen hidden">
+
+<div id="lives">❤️❤️❤️❤️❤️</div>
+
+  <!-- SLIDE TAB -->
+  <div id="side-tab">☰</div>
+
+  <!-- SIDE MENU -->
+  <div id="side-menu">
+    <h2>Menu</h2>
+    <button onclick="openPopup('rules')">Rules</button>
+    <button onclick="openPopup('credits')">Credits</button>
+    <button onclick="showScreen('menu')">Exit to Menu</button>
+  </div>
+
+  <div id="win-message" style="display:none;"> You Win!</div>
+  <div class="sudoku"></div>
+  <div id="overlay" class="hidden"></div>
+
+    <div id="number-bar">
+  <div class="num">1</div>
+  <div class="num">2</div>
+  <div class="num">3</div>
+  <div class="num">4</div>
+  <div class="num">5</div>
+  <div class="num">6</div>
+  <div class="num">7</div>
+  <div class="num">8</div>
+  <div class="num">9</div>
+</div>
+
+<div id="popup" class="hidden">
+  <button id="close-popup">✖</button>
+  <div id="popup-content"></div>
+  
+</div>
+
+
+
+
+
+</div>
+
+<script>
+const canvas = document.getElementById("bg");
+const ctx = canvas.getContext("2d");
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
+
+/* Floating squares */
+const objects = [];
+function createObject() {
+  return {
+    x: canvas.width + Math.random() * 200,
+    y: Math.random() * canvas.height,
+    size: 30 + Math.random() * 50,
+    speed: 0.5 + Math.random() * 2,
+    angle: Math.random() * Math.PI,
+    rotationSpeed: (Math.random() - 0.5) * 0.01,
+    alpha: 0.1 + Math.random() * 0.3
+  };
+}
+for (let i = 0; i < 15; i++) objects.push(createObject());
+
+function drawSquare(size) {
+  ctx.fillStyle = "white";
+  ctx.fillRect(-size/2, -size/2, size, 1);
+  ctx.fillRect(-size/2, size/2, size, 1);
+  ctx.fillRect(-size/2, -size/2, 1, size);
+  ctx.fillRect(size/2, -size/2, 1, size);
+}
+
+/* MENU SUDOKU (only visible in menu) */
+const menuSudoku = [];
+
+function createMenuSudoku() {
+  for (let y = 0; y < 9; y++) {
+    menuSudoku[y] = [];
+    for (let x = 0; x < 9; x++) {
+      menuSudoku[y][x] = {
+        value: Math.floor(Math.random() * 9) + 1,
+        alpha: 0,
+        targetAlpha: Math.random() > 0.5 ? 1 : 0
+      };
+    }
+  }
+}
+createMenuSudoku();
+
+
+function drawMenuSudoku() {
+  const menu = document.getElementById("menu");
+
+  if (!menu || menu.classList.contains("hidden")) return;
+
+  const size = 60;
+  const offsetX = canvas.width * 0.65 - (size * 9) / 2;
+  const offsetY = canvas.height / 2 - (size * 9) / 2;
+
+  ctx.save();
+  ctx.translate(offsetX, offsetY);
+
+  // grid
+  // Thin lines
+ctx.strokeStyle = "rgba(255,255,255,0.5)";
+ctx.lineWidth = 1;
+
+for (let i = 0; i <= 9; i++) {
+  ctx.beginPath();
+  ctx.moveTo(i * size, 0);
+  ctx.lineTo(i * size, size * 9);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(0, i * size);
+  ctx.lineTo(size * 9, i * size);
+  ctx.stroke();
+}
+
+// 🔥 Thick 3x3 lines
+ctx.strokeStyle = "rgba(255,255,255,0.9)";
+ctx.lineWidth = 3;
+
+for (let i = 0; i <= 9; i += 3) {
+  ctx.beginPath();
+  ctx.moveTo(i * size, 0);
+  ctx.lineTo(i * size, size * 9);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(0, i * size);
+  ctx.lineTo(size * 9, i * size);
+  ctx.stroke();
+}
+
+  // numbers
+  ctx.font = "28px Courier New";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+
+  menuSudoku.forEach((row, y) => {
+    row.forEach((cell, x) => {
+      if (cell.alpha > 0.05) {
+        ctx.globalAlpha = cell.alpha;
+        ctx.fillStyle = "white";
+
+        ctx.fillText(
+          cell.value,
+          x * size + size / 2,
+          y * size + size / 2
+        );
+      }
+    });
+  });
+
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+/* MAIN LOOP */
+function draw() {
+  ctx.fillStyle = "rgba(0,0,0,0.5)";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  objects.forEach(obj => {
+    ctx.save();
+    ctx.translate(obj.x, obj.y);
+    ctx.rotate(obj.angle);
+    ctx.globalAlpha = obj.alpha;
+    drawSquare(obj.size);
+    ctx.restore();
+
+    obj.x -= obj.speed;
+    obj.angle += obj.rotationSpeed;
+
+    if (obj.x < -obj.size) Object.assign(obj, createObject());
+  });
+
+  // 🔥 THIS WAS MISSING
+  updateMenuSudoku();
+  drawMenuSudoku();
+
+  requestAnimationFrame(draw);
+}
+
+function updateMenuSudoku() {
+  menuSudoku.forEach(row => {
+    row.forEach(cell => {
+
+      // randomly toggle visibility
+      if (Math.random() < 0.002) {
+        cell.targetAlpha = cell.targetAlpha === 0 ? 1 : 0;
+
+        if (cell.targetAlpha === 1) {
+          cell.value = Math.floor(Math.random() * 9) + 1;
+        }
+      }
+
+      // smooth fade
+      cell.alpha += (cell.targetAlpha - cell.alpha) * 0.05;
+    });
+  });
+}
+
+draw();
+</script>
+
+  <script src="sudoku.js"></script>
+</body>
+</html>

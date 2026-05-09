@@ -1,0 +1,196 @@
+KARTA PRACY: Programowanie Obiektowe (OOP)
+
+
+1. Rozgrzewka: Teoria w pigułce
+
+Klasa - „Forma” lub projekt, na podstawie którego powstają konkretne egzemplarze.
+Obiekt - Konkretny „byt” stworzony na podstawie klasy, posiadający własny stan (dane).
+Dziedziczenie - Mechanizm pozwalający nowej klasie przejąć cechy i metody klasy istniejącej.
+Polimorfizm - Właściwość pozwalająca traktować obiekty różnych klas pochodnych w ujednolicony sposób.
+
+
+2. Zadanie: Projektowanie hierarchii
+
+Struktura klas:
+
+Klasa bazowa: Zwierze
+pola: imie, wiek
+metoda: wydajDzwiek()
+Klasy pochodne:
+Lew
+Papuga (dodatkowa cecha: kolor)
+Slon
+
+Polimorfizm – dźwięki zwierząt:
+
+Lew - „Roooar!”
+Papuga - „Polly chce krakersa!”
+Słoń - „Trrrąb!”
+
+
+
+          Zwierze
+        /    |    \
+     Lew  Papuga  Slon
+
+
+
+
+3. Kodowanie: Implementacja
+
+
+class Zwierze {
+    String imie;
+
+
+    public Zwierze(String imie) {
+        this.imie = imie;
+    }
+
+    // Metoda
+    public String wydajDzwiek() {
+        return "Jakis blizej nieokreslony dzwiek";
+    }
+}
+
+
+class Lew extends Zwierze {
+
+    public Lew(String imie) {
+        super(imie);
+    }
+
+    
+    @Override
+    public String wydajDzwiek() {
+        return "Raaaaar!";
+    }
+}
+
+class Papuga extends Zwierze {
+
+    boolean czyMowi;
+
+    public Papuga(String imie, boolean czyMowi) {
+        super(imie);
+        this.czyMowi = czyMowi;
+    }
+
+    
+    @Override
+    public String wydajDzwiek() {
+        return "Polly chce krakersa!";
+    }
+}
+
+class Slon extends Zwierze {
+
+    public Slon(String imie) {
+        super(imie);
+    }
+
+    @Override
+    public String wydajDzwiek() {
+        return "Trrrrąbaaa!";
+    }
+}
+
+
+public class Main {
+    public static void main(String[] args) {
+
+      
+        Zwierze[] zoo = {
+            new Lew("Simba"),
+            new Papuga("Gaduła", true),
+            new Lew("Mufasa"),
+            new Slon("Dumbo")
+        };
+
+
+            for (Zwierze mieszkaniec : zoo) {
+            System.out.println(
+                mieszkaniec.imie + " mówi: " +
+                mieszkaniec.wydajDzwiek()
+            );
+        }
+    }
+}
+
+
+
+4. Analiza błędu (Debugging)
+
+Funkcja straznik_akcja(zwierze) jest przykładem polimorfizmu, ponieważ przyjmuje dowolny obiekt klasy Zwierze lub jej klas pochodnych.
+
+Nie musi wiedzieć, czy przekazany obiekt to Lew, Papuga czy Slon. Wywołuje metodę wydaj_dzwiek(), a odpowiednia wersja tej metody zostaje wykonana w zależności od rzeczywistego typu obiektu.
+
+Dzięki temu jeden kod działa dla wielu różnych typów obiektów.
+
+
+
+
+5. Wyzwanie: „System Płatności”
+
+
+class Platnosc {
+
+    public void autoryzuj() {
+        System.out.println("Autoryzacja płatności...");
+    }
+}
+
+
+class Karta extends Platnosc {
+
+    @Override
+    public void autoryzuj() {
+        System.out.println("Autoryzacja kartą zakończona.");
+    }
+}
+
+class Blik extends Platnosc {
+
+    @Override
+    public void autoryzuj() {
+        System.out.println("Autoryzacja BLIK zakończona.");
+    }
+}
+
+class Przelew extends Platnosc {
+
+    @Override
+    public void autoryzuj() {
+        System.out.println("Autoryzacja przelewu zakończona.");
+    }
+}
+
+
+class Kryptowaluty extends Platnosc {
+
+    @Override
+    public void autoryzuj() {
+        System.out.println("Autoryzacja kryptowalutą zakończona.");
+    }
+}
+
+
+public class Main {
+
+    public static void przetworzPlatnosc(Platnosc platnosc) {
+        platnosc.autoryzuj();
+    }
+
+    public static void main(String[] args) {
+
+        Platnosc p1 = new Karta();
+        Platnosc p2 = new Blik();
+        Platnosc p3 = new Przelew();
+        Platnosc p4 = new Kryptowaluty();
+
+        przetworzPlatnosc(p1);
+        przetworzPlatnosc(p2);
+        przetworzPlatnosc(p3);
+        przetworzPlatnosc(p4);
+    }
+}
